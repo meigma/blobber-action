@@ -1,0 +1,144 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify dist is up-to-date
+        run: |
+          if [ -n "$(git status --porcelain dist/)" ]; then
+            echo "Error: dist/ is out of date. Run 'npm run build' and commit."
+            git diff dist/
+            exit 1
+          fi
+
+  test-action:
+    needs: build
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test install mode
+        id: install
+        uses: ./
+        with:
+          mode: install
+          version: latest
+
+      - name: Verify blobber is available
+        run: blobber version
+
+      - name: Verify outputs
+        shell: bash
+        run: |
+          echo "Version: ${{ steps.install.outputs.version }}"
+          echo "Cache hit: ${{ steps.install.outputs.cache-hit }}"
+          test -n "${{ steps.install.outputs.version }}"
+
+  integration:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create test files
+        run: |
+          mkdir -p test-data
+          echo "Hello World" > test-data/hello.txt
+          echo '{"key": "value"}' > test-data/config.json
+
+      - name: Test push
+        id: push
+        uses: ./
+        with:
+          mode: push
+          directory: test-data
+          reference: ghcr.io/${{ github.repository }}/test:${{ github.sha }}
+          compression: gzip
+
+      - name: Verify push output
+        run: |
+          echo "Digest: ${{ steps.push.outputs.digest }}"
+          test -n "${{ steps.push.outputs.digest }}"
+
+      - name: Test list
+        id: list
+        uses: ./
+        with:
+          mode: list
+          reference: ghcr.io/${{ github.repository }}/test:${{ github.sha }}
+          long-format: true
+
+      - name: Verify list output
+        run: |
+          echo "Files: ${{ steps.list.outputs.files }}"
+          echo "Count: ${{ steps.list.outputs.file-count }}"
+          test "${{ steps.list.outputs.file-count }}" = "2"
+
+      - name: Test pull
+        uses: ./
+        with:
+          mode: pull
+          reference: ghcr.io/${{ github.repository }}/test:${{ github.sha }}
+          directory: pulled-data
+          overwrite: true
+
+      - name: Verify pulled files
+        run: |
+          diff test-data/hello.txt pulled-data/hello.txt
+          diff test-data/config.json pulled-data/config.json
+
+      - name: Test cat
+        uses: ./
+        with:
+          mode: cat
+          reference: ghcr.io/${{ github.repository }}/test:${{ github.sha }}
+          file-path: hello.txt

@@ -1,0 +1,51 @@
+{
+  "name": "blobber-action",
+  "version": "1.0.0",
+  "description": "GitHub Action for Blobber CLI - push/pull files to OCI registries",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc --noEmit && rollup -c rollup.config.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "all": "npm run format:check && npm run lint && npm run test && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meigma/blobber-action.git"
+  },
+  "keywords": [
+    "github-action",
+    "blobber",
+    "oci",
+    "container-registry",
+    "estargz"
+  ],
+  "author": "meigma",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "@actions/exec": "^1.1.1",
+    "@actions/http-client": "^2.2.3",
+    "@actions/tool-cache": "^2.0.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.16.0",
+    "@rollup/plugin-commonjs": "^28.0.2",
+    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.2",
+    "eslint": "^9.16.0",
+    "eslint-plugin-jest": "^28.10.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.4.2",
+    "rollup": "^4.28.1",
+    "ts-jest": "^29.2.5",
+    "tslib": "^2.8.1",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.1"
+  }
+}

@@ -1,0 +1,65 @@
+name: 'Blobber'
+description: 'Push and pull files to OCI registries using Blobber CLI'
+author: 'meigma'
+
+branding:
+  icon: 'package'
+  color: 'blue'
+
+inputs:
+  mode:
+    description: 'Operation mode: install, push, pull, list, or cat'
+    required: false
+    default: 'install'
+
+  version:
+    description: 'Blobber CLI version (e.g., "1.0.0" or "latest")'
+    required: false
+    default: 'latest'
+
+  reference:
+    description: 'OCI reference (e.g., ghcr.io/owner/repo:tag)'
+    required: false
+
+  directory:
+    description: 'Directory to push from or pull to'
+    required: false
+
+  compression:
+    description: 'Compression for push: gzip (default) or zstd'
+    required: false
+    default: 'gzip'
+
+  overwrite:
+    description: 'Overwrite existing files during pull'
+    required: false
+    default: 'false'
+
+  long-format:
+    description: 'Use long format for list (shows size and mode)'
+    required: false
+    default: 'false'
+
+  file-path:
+    description: 'Path within blob to stream (for cat mode)'
+    required: false
+
+outputs:
+  digest:
+    description: 'Digest of pushed blob (push mode)'
+
+  files:
+    description: 'JSON array of files (list mode)'
+
+  file-count:
+    description: 'Number of files (list/pull modes)'
+
+  version:
+    description: 'Installed Blobber CLI version'
+
+  cache-hit:
+    description: 'Whether CLI was restored from cache'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

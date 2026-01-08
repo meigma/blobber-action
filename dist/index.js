@@ -30030,7 +30030,7 @@ async function getLatestVersion() {
         coreExports.warning(`Failed to fetch latest version: ${error instanceof Error ? error.message : String(error)}`);
     }
     // Fallback version if API fails
-    const fallback = '0.1.0';
+    const fallback = '1.0.0';
     coreExports.warning(`Using fallback version: ${fallback}`);
     return fallback;
 }

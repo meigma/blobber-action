@@ -41,7 +41,7 @@ async function getLatestVersion(): Promise<string> {
   }
 
   // Fallback version if API fails
-  const fallback = '0.1.0'
+  const fallback = '1.0.0'
   core.warning(`Using fallback version: ${fallback}`)
   return fallback
 }

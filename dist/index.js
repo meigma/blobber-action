@@ -27576,9 +27576,31 @@ async function runPull() {
     const reference = coreExports.getInput('reference', { required: true });
     const directory = coreExports.getInput('directory', { required: true });
     const overwrite = coreExports.getBooleanInput('overwrite');
+    // Verification options
+    const verify = coreExports.getBooleanInput('verify');
+    const verifyUnsafe = coreExports.getBooleanInput('verify-unsafe');
+    const verifyIssuer = coreExports.getInput('verify-issuer');
+    const verifySubject = coreExports.getInput('verify-subject');
+    const trustedRoot = coreExports.getInput('trusted-root');
     const args = ['pull', reference, directory];
     if (overwrite) {
         args.push('--overwrite');
+    }
+    // Add verification flags
+    if (verify) {
+        args.push('--verify');
+    }
+    if (verifyUnsafe) {
+        args.push('--verify-unsafe');
+    }
+    if (verifyIssuer) {
+        args.push('--verify-issuer', verifyIssuer);
+    }
+    if (verifySubject) {
+        args.push('--verify-subject', verifySubject);
+    }
+    if (trustedRoot) {
+        args.push('--trusted-root', trustedRoot);
     }
     coreExports.info(`Pulling ${reference} to ${directory}...`);
     const { exitCode, stderr } = await execExports.getExecOutput('blobber', args, {
@@ -27607,11 +27629,33 @@ async function runPush() {
     const directory = coreExports.getInput('directory', { required: true });
     const reference = coreExports.getInput('reference', { required: true });
     const compression = coreExports.getInput('compression') || 'gzip';
+    // Signing options
+    const sign = coreExports.getBooleanInput('sign');
+    const signKey = coreExports.getInput('sign-key');
+    const signKeyPass = coreExports.getInput('sign-key-pass');
+    const fulcioUrl = coreExports.getInput('fulcio-url');
+    const rekorUrl = coreExports.getInput('rekor-url');
     // Validate compression option
     if (!['gzip', 'zstd'].includes(compression)) {
         throw new Error(`Invalid compression: ${compression}. Must be 'gzip' or 'zstd'`);
     }
     const args = ['push', directory, reference, '--compression', compression];
+    // Add signing flags
+    if (sign) {
+        args.push('--sign');
+    }
+    if (signKey) {
+        args.push('--sign-key', signKey);
+    }
+    if (signKeyPass) {
+        args.push('--sign-key-pass', signKeyPass);
+    }
+    if (fulcioUrl) {
+        args.push('--fulcio-url', fulcioUrl);
+    }
+    if (rekorUrl) {
+        args.push('--rekor-url', rekorUrl);
+    }
     coreExports.info(`Pushing ${directory} to ${reference} with ${compression}...`);
     const { exitCode, stdout, stderr } = await execExports.getExecOutput('blobber', args, {
         ignoreReturnCode: true

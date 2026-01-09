@@ -44,6 +44,51 @@ inputs:
     description: 'Path within blob to stream (for cat mode)'
     required: false
 
+  # Signing options (for push mode)
+  sign:
+    description: 'Enable artifact signing using Sigstore'
+    required: false
+    default: 'false'
+
+  sign-key:
+    description: 'Path to PEM-encoded private key for key-based signing'
+    required: false
+
+  sign-key-pass:
+    description: 'Password for encrypted private keys'
+    required: false
+
+  fulcio-url:
+    description: 'Custom Fulcio CA URL (default: https://fulcio.sigstore.dev)'
+    required: false
+
+  rekor-url:
+    description: 'Custom Rekor transparency log URL (default: https://rekor.sigstore.dev)'
+    required: false
+
+  # Verification options (for pull mode)
+  verify:
+    description: 'Enable signature verification'
+    required: false
+    default: 'false'
+
+  verify-unsafe:
+    description: 'Accept any valid signer identity without identity checking (unsafe)'
+    required: false
+    default: 'false'
+
+  verify-issuer:
+    description: 'Required OIDC issuer URL for verification (e.g., https://token.actions.githubusercontent.com)'
+    required: false
+
+  verify-subject:
+    description: 'Required identity subject for verification (e.g., https://github.com/owner/repo/.github/workflows/workflow.yml@refs/heads/main)'
+    required: false
+
+  trusted-root:
+    description: 'Path to custom trusted root JSON file'
+    required: false
+
 outputs:
   digest:
     description: 'Digest of pushed blob (push mode)'

@@ -9,6 +9,13 @@ export async function runPush(): Promise<void> {
   const reference = core.getInput('reference', { required: true })
   const compression = core.getInput('compression') || 'gzip'
 
+  // Signing options
+  const sign = core.getBooleanInput('sign')
+  const signKey = core.getInput('sign-key')
+  const signKeyPass = core.getInput('sign-key-pass')
+  const fulcioUrl = core.getInput('fulcio-url')
+  const rekorUrl = core.getInput('rekor-url')
+
   // Validate compression option
   if (!['gzip', 'zstd'].includes(compression)) {
     throw new Error(
@@ -17,6 +24,23 @@ export async function runPush(): Promise<void> {
   }
 
   const args = ['push', directory, reference, '--compression', compression]
+
+  // Add signing flags
+  if (sign) {
+    args.push('--sign')
+  }
+  if (signKey) {
+    args.push('--sign-key', signKey)
+  }
+  if (signKeyPass) {
+    args.push('--sign-key-pass', signKeyPass)
+  }
+  if (fulcioUrl) {
+    args.push('--fulcio-url', fulcioUrl)
+  }
+  if (rekorUrl) {
+    args.push('--rekor-url', rekorUrl)
+  }
 
   core.info(`Pushing ${directory} to ${reference} with ${compression}...`)
 

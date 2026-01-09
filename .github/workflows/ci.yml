@@ -142,3 +142,56 @@ jobs:
           mode: cat
           reference: ghcr.io/${{ github.repository }}/test:${{ github.sha }}
           file-path: hello.txt
+
+  integration-signing:
+    needs: build
+    runs-on: ubuntu-latest
+    # TODO: Restore condition after testing: if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+
+      - name: Login to GHCR
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create test files
+        run: |
+          mkdir -p test-data-signed
+          echo "Signed content" > test-data-signed/signed.txt
+
+      - name: Test push with signing
+        id: push-signed
+        uses: ./
+        with:
+          mode: push
+          directory: test-data-signed
+          reference: ghcr.io/${{ github.repository }}/test-signed:${{ github.sha }}
+          sign: true
+
+      - name: Verify signed push output
+        run: |
+          echo "Digest: ${{ steps.push-signed.outputs.digest }}"
+          test -n "${{ steps.push-signed.outputs.digest }}"
+
+      - name: Test pull with verification
+        uses: ./
+        with:
+          mode: pull
+          reference: ghcr.io/${{ github.repository }}/test-signed:${{ github.sha }}
+          directory: pulled-data-signed
+          verify: true
+          verify-issuer: https://token.actions.githubusercontent.com
+          verify-subject: https://github.com/${{ github.repository }}/.github/workflows/ci.yml@${{ github.ref }}
+
+      - name: Verify pulled signed files
+        run: |
+          cat pulled-data-signed/signed.txt
+          grep -q "Signed content" pulled-data-signed/signed.txt

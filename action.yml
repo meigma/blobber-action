@@ -1,4 +1,4 @@
-name: 'Blobber'
+name: 'blobber-action'
 description: 'Push and pull files to OCI registries using Blobber CLI'
 author: 'meigma'
 
